@@ -1,0 +1,20 @@
+name: GitHub Comment
+description: ":speech_balloon:Post a comment to an Issue or PR on GitHub."
+author: https://github.com/skyleaworlder
+requirements:
+  - jq
+  - curl
+  - python3
+configuration:
+  properties:
+    repository:
+      type: string
+    issue_number:
+      type: string
+    comment:
+      type: string
+  required:
+    - repository
+    - issue_number
+    - comment
+  additionalProperties: false
