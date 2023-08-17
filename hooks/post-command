@@ -5,7 +5,10 @@ set -euo pipefail
 # REPO e.g. FluxML/NNlib.jl
 REPO=${BUILDKITE_PLUGIN_GITHUB_COMMENT_REPOSITORY}
 PR=${BUILDKITE_PLUGIN_GITHUB_COMMENT_ISSUE_NUMBER}
-COMMENT_CONTENT=${BUILDKITE_PLUGIN_GITHUB_COMMENT_COMMENT}
+
+buildkite-agent artifact download comment.txt .
+COMMENT=$(cat comment.txt)
+echo $COMMENT
 
 if [[ -z "${REPO:-}" ]]; then
   echo "Error: REPO is missing. Skipping" 1>&2
@@ -17,7 +20,7 @@ if [[ -z "${PR:-}" ]]; then
   exit 1
 fi
 
-if [[ -z "${COMMENT_CONTENT:-}" ]]; then
+if [[ -z "${COMMENT:-}" ]]; then
   echo "Error: comment property in the plugin es mandatory" 1>&2
   exit 1
 fi
@@ -48,7 +51,7 @@ fi
 ${python_bin} -m pip install jwt
 
 # Generate JWT
-JWT=$(${python_bin} get_jwt.py ${PEM_CONTENT_B64} ${APP_ID})
+JWT=$(${python_bin} hooks/get_jwt.py ${PEM_CONTENT_B64} ${APP_ID})
 
 # Generate Installation Access Token
 IAT=$(curl -L -X POST \
@@ -66,7 +69,7 @@ fi
 
 echo "Posting comment to #$PR in $REPO"  1>&2
 
-jq -n --arg msg "${COMMENT_CONTENT}" '{body: $msg}' | curl -sSg \
+jq -n --arg msg "${COMMENT}" '{body: $msg}' | curl -sSg \
     -u apikey:${IAT} \
     -H 'Accept: application/vnd.github.v3+json' \
     -H 'Content-Type: application/json' \
